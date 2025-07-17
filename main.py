@@ -1,13 +1,12 @@
 import streamlit as st
 import nltk
 from nltk import NaiveBayesClassifier
-from nltk.classify import apply_features
 from joblib import load
 
 # Download NLTK resources if not already downloaded
 nltk.download('names')
 
-# Function to extract features from a name
+# Feature extraction function
 def extract_gender_features(name):
     name = name.lower()
     features = {
@@ -25,29 +24,72 @@ def extract_gender_features(name):
     }
     return features
 
-# Load the trained Naive Bayes classifier
+# Load trained model
 bayes = load('gender_prediction.joblib')
 
-# Streamlit app
+# Custom CSS for modern look
+st.markdown("""
+<style>
+    .main-header {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 700;
+        font-size: 3rem;
+        color: #4B77BE;
+        text-align: center;
+        margin-bottom: 0.3em;
+    }
+    .sub-header {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 400;
+        font-size: 1.3rem;
+        color: #555;
+        text-align: center;
+        margin-bottom: 2em;
+    }
+    .stButton>button {
+        background-color: #4B77BE;
+        color: white;
+        border-radius: 8px;
+        height: 3em;
+        width: 100%;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #3A5D99;
+        color: #fff;
+    }
+    .result-box {
+        background-color: #eaf3fb;
+        border-left: 6px solid #4B77BE;
+        padding: 1em 1.2em;
+        border-radius: 8px;
+        font-size: 1.4rem;
+        margin-top: 1em;
+        font-weight: 600;
+        color: #222;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 def main():
-    st.title('Gender Prediction App')
-    st.write('Enter a name to predict its gender.')
+    st.markdown('<h1 class="main-header">🚻 Gender Prediction App</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Enter a name below to predict its gender with high accuracy.</p>', unsafe_allow_html=True)
 
-    # Input for name
-    input_name = st.text_input('Name:')
-    
-    if st.button('Predict'):
-        if input_name.strip() != '':
-            # Extract features for the input name
+    # Using form for cleaner input/submit flow
+    with st.form(key='name_form'):
+        input_name = st.text_input('Your Name', max_chars=30, placeholder="Type a name here...")
+        submit_button = st.form_submit_button(label='Predict Gender')
+
+    if submit_button:
+        if input_name.strip():
             features = extract_gender_features(input_name)
-            
-            # Predict using the trained classifier
             predicted_gender = bayes.classify(features)
-            
-            # Display prediction
-            st.success(f'The predicted gender for "{input_name}" is: {predicted_gender}')
-        else:
-            st.warning('Please enter a name.')
 
-if __name__ == '__main__':
+            st.markdown(f'<div class="result-box">Prediction: The name <b>"{input_name}"</b> is most likely <span style="color:#4B77BE;">{predicted_gender}</span>.</div>', unsafe_allow_html=True)
+        else:
+            st.warning('⚠️ Please enter a valid name.')
+
+if __name__ == "__main__":
     main()
